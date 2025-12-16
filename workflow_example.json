@@ -1,0 +1,382 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "webScrapper",
+        "dataset_id": {
+          "__rl": true,
+          "value": "gd_lkaxegm826bjpoo9m5",
+          "mode": "list",
+          "cachedResultName": "Facebook - Pages Posts by Profile URL"
+        },
+        "requestOptions": {}
+      },
+      "id": "e0fc295f-5a18-4204-8440-ab210d999884",
+      "name": "Scrape Data",
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        512,
+        624
+      ],
+      "credentials": {
+        "brightdataApi": {
+          "id": "vbXUmCDEDcbA4ULP",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "webScrapper",
+        "operation": "downloadSnapshot",
+        "requestOptions": {}
+      },
+      "id": "24d55a36-4746-4509-bace-e77987db87fc",
+      "name": "Download Snapshot",
+      "type": "@brightdata/n8n-nodes-brightdata.brightData",
+      "typeVersion": 1,
+      "position": [
+        752,
+        624
+      ],
+      "credentials": {
+        "brightdataApi": {
+          "id": "vbXUmCDEDcbA4ULP",
+          "name": "BrightData account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const p = item.json;\n  return {\n    json: {\n      post_id: p.post_id,\n      content: p.content || '',\n      page_name: p.page_name,\n      video_views: p.video_view_count || 0,\n      likes: p.likes || 0,\n      shares: p.num_shares || 0,\n      comments: p.num_comments || 0,\n      hashtags: (p.hashtags || []).join(','),\n      date_posted: p.date_posted,\n      scraped_at: new Date().toISOString(),\n      source: 'facebook',\n      post_url: p.url,\n      profile_url: p.user_url\n    }\n  };\n});"
+      },
+      "id": "13eadc55-a424-4994-8706-76c26ba34071",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "select"
+      },
+      "id": "842e9567-bc6b-4572-b9c5-42ce58a2d19e",
+      "name": "Check Duplicate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.length === 0 }}"
+            }
+          ]
+        }
+      },
+      "id": "f4642829-4f7f-4c77-8589-6049ccaa5c69",
+      "name": "Post Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert"
+      },
+      "id": "5daebd7f-8575-46bd-bd69-529057e557d3",
+      "name": "Insert New Post",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert"
+      },
+      "id": "093fbc61-80d6-48fd-8464-287934f6f9e6",
+      "name": "Log Duplicate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "✅ New post inserted: {{$json.post_id}}\\n📄 {{$json.content}}\\n📅 {{$json.date_posted}}",
+        "additionalFields": {}
+      },
+      "id": "9d1fe47f-51af-460b-bd3a-f7ef102ff2a5",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        624
+      ],
+      "webhookId": "49783f90-35fd-4638-aa25-17c2ee010be7"
+    },
+    {
+      "parameters": {
+        "content": "**Schedule Trigger**\n\nRuns automatically (e.g. hourly or daily) to start the workflow.",
+        "height": 512
+      },
+      "id": "bdb18f34-90e0-4a04-aea9-3ea3f3ea76de",
+      "name": "Note - Trigger",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Bright Data Scraper**\n\nLaunches Facebook scraper dataset job.",
+        "height": 512,
+        "color": 3
+      },
+      "id": "db573618-04dc-484f-811f-bfb6aaed6fbc",
+      "name": "Note - Scraper",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Download Snapshot**\n\nRetrieves dataset results as an array of posts.",
+        "height": 512,
+        "color": 5
+      },
+      "id": "249c2768-6ca4-433a-8d70-830567fea61a",
+      "name": "Note - Snapshot",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Transform Data**\n\nCleans and maps the scraped data to a consistent format ready for Supabase.",
+        "height": 512,
+        "color": 6
+      },
+      "id": "820ee8cd-9a68-42a3-8f7b-1ad19c27366f",
+      "name": "Note - Transform",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        912,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Check Duplicate**\n\nQueries Supabase to see if the post_id already exists.",
+        "height": 512,
+        "color": 4
+      },
+      "id": "615051ab-89c7-4ea1-a16c-ea92705f4254",
+      "name": "Note - CheckDuplicate",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Post Exists?**\n\nBranches: \nIf false ➡️ Insert. \nIf true ➡️ Skip (log duplicate).",
+        "height": 512,
+        "color": 7
+      },
+      "id": "ec2b8950-c70e-4246-ac0e-48f66b9e101b",
+      "name": "Note - If",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Log Duplicate**\n\nWrites duplicates to a separate Supabase table for review.",
+        "height": 256,
+        "color": 3
+      },
+      "id": "bd79b39b-c798-41fe-beca-8df1c91db0da",
+      "name": "Note - Insert",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Insert New Post**\n\nInserts new record into Supabase. Continues on fail to avoid stopping execution.",
+        "height": 256,
+        "color": 2
+      },
+      "id": "76c6fa14-fd8f-472b-bf28-25a1704ace17",
+      "name": "Note - Log",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "content": "**Telegram (or Slack) Notification**\n\nSends you an alert when a new post is inserted.",
+        "height": 512,
+        "color": 5
+      },
+      "id": "5189dd2a-9733-4f6d-a42c-29e3332e8d1a",
+      "name": "Note - Telegram",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "e3301ec1-339c-427e-8dc6-34b439dc8fa2",
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        624
+      ]
+    }
+  ],
+  "connections": {
+    "Scrape Data": {
+      "main": [
+        [
+          {
+            "node": "Download Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Post Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Exists?": {
+      "main": [
+        [
+          {
+            "node": "Log Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert New Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert New Post": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Scrape Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "589489f477dfbb0f734bcef3a4018cc90f6c98856eb525ee52ee670ac952da2a"
+  }
+}
