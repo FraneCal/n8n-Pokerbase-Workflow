@@ -136,7 +136,7 @@
     },
     {
       "parameters": {
-        "content": "**Schedule Trigger**\n\nRuns automatically (e.g. hourly or daily) to start the workflow.",
+        "content": "**Schedule Trigger**\n\nRuns automatically (e.g. every day at 00:00 CET) to start the workflow.",
         "height": 512
       },
       "id": "bdb18f34-90e0-4a04-aea9-3ea3f3ea76de",
@@ -150,7 +150,7 @@
     },
     {
       "parameters": {
-        "content": "**Bright Data Scraper**\n\nLaunches Facebook scraper dataset job.",
+        "content": "**Bright Data Scraper**\n\nLaunches Social media scraper dataset job.",
         "height": 512,
         "color": 3
       },
@@ -210,7 +210,7 @@
     },
     {
       "parameters": {
-        "content": "**Post Exists?**\n\nBranches: \nIf false ➡️ Insert. \nIf true ➡️ Skip (log duplicate).",
+        "content": "**Post Exists?**\n\nIf false ➡️ Insert. \nIf true ➡️ Skip (log duplicate).",
         "height": 512,
         "color": 7
       },
